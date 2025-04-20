@@ -12,10 +12,7 @@ builder.Services
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
-
-    );
-
-
+    ); 
 //DB
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
