@@ -1,4 +1,6 @@
 using Backend_dotnet.Core.DbContext;
+using Backend_dotnet.Core.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -21,6 +23,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 }
 
     );
+//Dependency injection
+//Add Identity
+builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+    
 
 
 
