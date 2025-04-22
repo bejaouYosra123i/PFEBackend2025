@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "ContainingType": "Backend_dotnet.Controllers.TestController",
+    "Method": "GetAdminData",
+    "RelativePath": "api/Test/get-admin-role",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend_dotnet.Controllers.TestController",
+    "Method": "GetManagerData",
+    "RelativePath": "api/Test/get-manager-role",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend_dotnet.Controllers.TestController",
+    "Method": "GetPublicData",
+    "RelativePath": "api/Test/get-public",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend_dotnet.Controllers.TestController",
+    "Method": "GetUserData",
+    "RelativePath": "api/Test/get-user-role",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]
