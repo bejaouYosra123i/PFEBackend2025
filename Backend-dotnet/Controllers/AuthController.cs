@@ -30,9 +30,10 @@ namespace Backend_dotnet.Controllers
         // Route -> Register
         [HttpPost]
         [Route("register")]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var registerResult = await _authService.RegisterAsync(registerDto);
+            var registerResult = await _authService.RegisterAsync(User,registerDto);
             return StatusCode(registerResult.StatusCode, registerResult.Message);
         }
 
@@ -98,6 +99,8 @@ namespace Backend_dotnet.Controllers
         // Route -> List of all users with details
         [HttpGet]
         [Route("users")]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
+
         public async Task<ActionResult<IEnumerable<UserInfoResult>>> GetUsersList()
         {
             var usersList = await _authService.GetUsersListAsync();
@@ -107,6 +110,8 @@ namespace Backend_dotnet.Controllers
 
         // Route -> Get a User by UserName
         [HttpGet]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
+
         [Route("users/{userName}")]
         public async Task<ActionResult<UserInfoResult>> GetUserDetailsByUserName([FromRoute] string userName)
         {

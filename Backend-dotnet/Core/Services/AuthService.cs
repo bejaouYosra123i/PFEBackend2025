@@ -58,8 +58,19 @@ namespace Backend_dotnet.Core.Services
         #endregion
 
         #region RegisterAsync
-        public async Task<GeneralServiceResponseDto> RegisterAsync(RegisterDto registerDto)
+        public async Task<GeneralServiceResponseDto> RegisterAsync(ClaimsPrincipal User , RegisterDto registerDto)
         {
+
+            // Only ADMIN can register new users
+            if (!User.IsInRole(StaticUserRoles.ADMIN))
+                return new GeneralServiceResponseDto()
+                {
+                    IsSucceed = false,
+                    StatusCode = 403,
+                    Message = "Only admins can register new users"
+                };
+
+
             var isExistsUser = await _userManager.FindByNameAsync(registerDto.UserName);
             if (isExistsUser is not null)
                 return new GeneralServiceResponseDto()
@@ -170,13 +181,12 @@ namespace Backend_dotnet.Core.Services
                     Message = "Cannot change the role of an admin"
                 };
 
-            // Validate the new role (only USER or MANAGER allowed)
-            if (updateRoleDto.NewRole != RoleType.USER && updateRoleDto.NewRole != RoleType.MANAGER)
+            if (updateRoleDto.NewRole != RoleType.USER && updateRoleDto.NewRole != RoleType.MANAGER && updateRoleDto.NewRole != RoleType.ADMIN)
                 return new GeneralServiceResponseDto()
                 {
                     IsSucceed = false,
                     StatusCode = 400,
-                    Message = "Invalid role. Only USER or MANAGER can be assigned"
+                    Message = "Invalid role. Only USER or MANAGER or ADMIN can be assigned"
                 };
 
             // Update the user's role
