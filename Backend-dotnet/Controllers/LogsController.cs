@@ -29,7 +29,6 @@ namespace Backend_dotnet.Controllers
 
         [HttpGet]
         [Route("mine")]
-        //AnyType body logged in can see his logs
         [Authorize]
         public async Task<ActionResult<IEnumerable<GetLogDto>>> GetMyLogs()
         {

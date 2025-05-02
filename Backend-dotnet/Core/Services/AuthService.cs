@@ -62,13 +62,13 @@ namespace Backend_dotnet.Core.Services
         {
 
             // Only ADMIN can register new users
-            if (!User.IsInRole(StaticUserRoles.ADMIN))
-                return new GeneralServiceResponseDto()
-                {
-                    IsSucceed = false,
-                    StatusCode = 403,
-                    Message = "Only admins can register new users"
-                };
+            //if (!User.IsInRole(StaticUserRoles.ADMIN))
+            //    return new GeneralServiceResponseDto()
+            //    {
+            //        IsSucceed = false,
+            //        StatusCode = 403,
+            //        Message = "Only admins can register new users"
+            //    };
 
 
             var isExistsUser = await _userManager.FindByNameAsync(registerDto.UserName);
@@ -150,7 +150,7 @@ namespace Backend_dotnet.Core.Services
         #region UpdateRoleAsync
         public async Task<GeneralServiceResponseDto> UpdateRoleAsync(ClaimsPrincipal User, UpdateRoleDto updateRoleDto)
         {
-            // Find the target user
+            
             var user = await _userManager.FindByNameAsync(updateRoleDto.UserName);
             if (user is null)
                 return new GeneralServiceResponseDto()

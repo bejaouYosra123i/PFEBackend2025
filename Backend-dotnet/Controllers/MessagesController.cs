@@ -18,7 +18,6 @@ namespace Backend_dotnet.Controllers
             _messageService = messageService;
         }
 
-        // Route -> Create a new message to send to another user
         [HttpPost]
         [Route("create")]
         [Authorize]
