@@ -96,6 +96,28 @@ namespace Backend_dotnet.Controllers
             }
         }
 
+
+
+        [HttpPut]
+        [Route("update-credentials")]
+        [Authorize]
+        public async Task<IActionResult> UpdateCredentials([FromBody] UpdateCredentialsDto updateCredentialsDto)
+        {
+            var result = await _authService.UpdateCredentialsAsync(User, updateCredentialsDto);
+
+            if (result.IsSucceed)
+            {
+                return Ok(result.Message);
+            }
+            else
+            {
+                return StatusCode(result.StatusCode, result.Message);
+            }
+        }
+
+
+
+
         // Route -> List of all users with details
         [HttpGet]
         [Route("users")]

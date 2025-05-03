@@ -79,6 +79,22 @@
   },
   {
     "ContainingType": "Backend_dotnet.Controllers.AuthController",
+    "Method": "UpdateCredentials",
+    "RelativePath": "api/Auth/update-credentials",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "updateCredentialsDto",
+        "Type": "Backend_dotnet.Core.Dtos.Auth.UpdateCredentialsDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend_dotnet.Controllers.AuthController",
     "Method": "UpdateRole",
     "RelativePath": "api/Auth/update-role",
     "HttpMethod": "POST",

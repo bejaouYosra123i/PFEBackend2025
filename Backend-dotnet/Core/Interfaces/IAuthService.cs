@@ -15,6 +15,8 @@ namespace Backend_dotnet.Core.Interfaces
         Task<UserInfoResult?> GetUserDetailsByUserNameAsync(string userName);
         Task<IEnumerable<string>> GetUsernamesListAsync();
 
+        Task<GeneralServiceResponseDto> UpdateCredentialsAsync(ClaimsPrincipal User, UpdateCredentialsDto updateCredentialsDto);
+
 
 
 
