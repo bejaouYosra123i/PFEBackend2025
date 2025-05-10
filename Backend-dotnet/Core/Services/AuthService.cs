@@ -436,5 +436,37 @@ namespace Backend_dotnet.Core.Services
 
             return response;
         }
+
+        public async Task<GeneralServiceResponseDto> DeleteUserByIdAsync(System.Security.Claims.ClaimsPrincipal adminUser, string userId)
+        {
+            var response = new GeneralServiceResponseDto();
+            var userToDelete = await _userManager.FindByIdAsync(userId);
+            if (userToDelete == null)
+            {
+                response.IsSucceed = false;
+                response.StatusCode = 404;
+                response.Message = "Utilisateur à supprimer non trouvé";
+                return response;
+            }
+            var result = await _userManager.DeleteAsync(userToDelete);
+            if (result.Succeeded)
+            {
+                var adminUserName = adminUser.Identity?.Name ?? "UnknownAdmin";
+                await _logService.SaveNewLog(
+                    adminUserName,
+                    $"Deleted user {userToDelete.UserName} (ID: {userToDelete.Id})"
+                );
+                response.IsSucceed = true;
+                response.StatusCode = 200;
+                response.Message = "Utilisateur supprimé avec succès";
+            }
+            else
+            {
+                response.IsSucceed = false;
+                response.StatusCode = 500;
+                response.Message = "Erreur lors de la suppression";
+            }
+            return response;
+        }
     }
 }

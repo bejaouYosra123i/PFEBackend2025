@@ -17,6 +17,8 @@ namespace Backend_dotnet.Core.Interfaces
 
         Task<GeneralServiceResponseDto> UpdateCredentialsAsync(ClaimsPrincipal User, UpdateCredentialsDto updateCredentialsDto);
 
+        Task<GeneralServiceResponseDto> DeleteUserByIdAsync(System.Security.Claims.ClaimsPrincipal adminUser, string userId);
+
 
 
 

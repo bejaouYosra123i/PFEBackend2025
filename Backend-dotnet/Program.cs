@@ -20,7 +20,7 @@ builder.Services
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     }
-    ); 
+    );
 //DB
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -34,6 +34,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IInvestmentFormService, InvestmentFormService>();
 
 
 

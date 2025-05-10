@@ -33,7 +33,7 @@ namespace Backend_dotnet.Controllers
         [Authorize(Roles = StaticUserRoles.ADMIN)]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var registerResult = await _authService.RegisterAsync(User,registerDto);
+            var registerResult = await _authService.RegisterAsync(User, registerDto);
             return StatusCode(registerResult.StatusCode, registerResult.Message);
         }
 
@@ -103,6 +103,11 @@ namespace Backend_dotnet.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateCredentials([FromBody] UpdateCredentialsDto updateCredentialsDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var result = await _authService.UpdateCredentialsAsync(User, updateCredentialsDto);
 
             if (result.IsSucceed)
@@ -114,7 +119,6 @@ namespace Backend_dotnet.Controllers
                 return StatusCode(result.StatusCode, result.Message);
             }
         }
-
 
 
 
@@ -157,5 +161,27 @@ namespace Backend_dotnet.Controllers
 
             return Ok(usernames);
         }
+
+        // Route -> Delete user by id (simple, sans vérification de mot de passe)
+        [HttpDelete("users/{id}")]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var result = await _authService.DeleteUserByIdAsync(User, id);
+            if (result.IsSucceed)
+                return Ok(result.Message);
+            return StatusCode(result.StatusCode, result.Message);
+        }
+
+        // Route -> Delete user with password verification
+        // [HttpPost("users/verify-and-delete")]
+        // [Authorize(Roles = StaticUserRoles.ADMIN)]
+        // public async Task<IActionResult> VerifyAndDelete([FromBody] DeleteUserDto dto)
+        // {
+        //     var result = await _authService.VerifyAndDeleteAsync(User, dto);
+        //     if (result.IsSucceed)
+        //         return Ok(result.Message);
+        //     return StatusCode(result.StatusCode, result.Message);
+        // }
     }
 }
