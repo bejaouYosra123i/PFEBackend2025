@@ -16,6 +16,8 @@ namespace Backend_dotnet.Core.DbContext
         public DbSet<Message> Messages { get; set;}
         public DbSet<InvestmentForm> InvestmentForms { get; set; }
         public DbSet<InvestmentItem> InvestmentItems { get; set; }
+        public DbSet<AssetScrub> AssetScrubs { get; set; }
+        public DbSet<PcRequest> PcRequests { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)

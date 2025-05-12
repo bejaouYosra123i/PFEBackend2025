@@ -35,6 +35,8 @@ builder.Services.AddScoped<ILogService, LogService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInvestmentFormService, InvestmentFormService>();
+builder.Services.AddScoped<IAssetScrubService, AssetScrubService>();
+builder.Services.AddScoped<IPcRequestService, PcRequestService>();
 
 
 
@@ -113,6 +115,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Ajout de la configuration CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -122,13 +135,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(options =>
-{
-    options
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowAnyOrigin();
-});
+// Utilisation de la politique CORS par défaut
+app.UseCors();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

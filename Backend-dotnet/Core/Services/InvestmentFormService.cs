@@ -19,13 +19,18 @@ namespace Backend_dotnet.Core.Services
 
         public async Task<List<InvestmentFormDto>> GetAllAsync()
         {
-            var forms = await _context.InvestmentForms.Include(f => f.Items).ToListAsync();
+            var forms = await _context.InvestmentForms
+                .Include(f => f.Items)
+                .Where(f => !f.IsDeleted)
+                .ToListAsync();
             return forms.Select(f => ToDto(f)).ToList();
         }
 
         public async Task<InvestmentFormDto> GetByIdAsync(int id)
         {
-            var form = await _context.InvestmentForms.Include(f => f.Items).FirstOrDefaultAsync(f => f.Id == id);
+            var form = await _context.InvestmentForms
+                .Include(f => f.Items)
+                .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted);
             return form == null ? null : ToDto(form);
         }
 
@@ -43,6 +48,10 @@ namespace Backend_dotnet.Core.Services
                 Observations = dto.Observations,
                 Total = dto.Total,
                 Status = dto.Status,
+                NumRitm = dto.NumRitm,
+                NumCoupa = dto.NumCoupa,
+                NumIyras = dto.NumIyras,
+                IoNumber = dto.IoNumber,
                 Items = dto.Items?.Select(i => new InvestmentItem
                 {
                     Description = i.Description,
@@ -68,11 +77,13 @@ namespace Backend_dotnet.Core.Services
             form.Location = dto.Location;
             form.TypeOfInvestment = dto.TypeOfInvestment;
             form.Justification = dto.Justification;
-            form.ReqDate = dto.ReqDate;
-            form.DueDate = dto.DueDate;
             form.Observations = dto.Observations;
             form.Total = dto.Total;
             form.Status = dto.Status;
+            form.NumRitm = dto.NumRitm;
+            form.NumCoupa = dto.NumCoupa;
+            form.NumIyras = dto.NumIyras;
+            form.IoNumber = dto.IoNumber;
             // Update items: simple version (remove all, add new)
             _context.InvestmentItems.RemoveRange(form.Items);
             form.Items = dto.Items?.Select(i => new InvestmentItem
@@ -91,12 +102,34 @@ namespace Backend_dotnet.Core.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var form = await _context.InvestmentForms.Include(f => f.Items).FirstOrDefaultAsync(f => f.Id == id);
-            if (form == null) return false;
-            _context.InvestmentItems.RemoveRange(form.Items);
-            _context.InvestmentForms.Remove(form);
-            await _context.SaveChangesAsync();
-            return true;
+            try
+            {
+                var form = await _context.InvestmentForms
+                    .Include(f => f.Items)
+                    .FirstOrDefaultAsync(f => f.Id == id);
+
+                if (form == null) return false;
+
+                // Marquer les items comme supprimés
+                foreach (var item in form.Items)
+                {
+                    item.IsDeleted = true;
+                    item.IsActive = false;
+                }
+
+                // Marquer le formulaire comme supprimé
+                form.IsDeleted = true;
+                form.IsActive = false;
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log the exception (e.g., using a logging framework)
+                // Console.WriteLine(ex.Message); // Replace with proper logging
+                return false; // Indicate failure due to database issues
+            }
         }
 
         private InvestmentFormDto ToDto(InvestmentForm form)
@@ -114,6 +147,10 @@ namespace Backend_dotnet.Core.Services
                 Observations = form.Observations,
                 Total = form.Total,
                 Status = form.Status,
+                NumRitm = form.NumRitm,
+                NumCoupa = form.NumCoupa,
+                NumIyras = form.NumIyras,
+                IoNumber = form.IoNumber,
                 Items = form.Items?.Select(i => new InvestmentItemDto
                 {
                     Description = i.Description,

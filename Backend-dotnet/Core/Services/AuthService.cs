@@ -372,58 +372,57 @@ namespace Backend_dotnet.Core.Services
                 }
 
                 // Update FirstName, LastName, and Address if provided
-                if (!string.IsNullOrEmpty(updateCredentialsDto.FirstName))
+                var changes = new List<string>();
+                if (!string.IsNullOrEmpty(updateCredentialsDto.FirstName) && updateCredentialsDto.FirstName != currentUser.FirstName) {
                     currentUser.FirstName = updateCredentialsDto.FirstName;
-                if (!string.IsNullOrEmpty(updateCredentialsDto.LastName))
+                    changes.Add("FirstName");
+                }
+                if (!string.IsNullOrEmpty(updateCredentialsDto.LastName) && updateCredentialsDto.LastName != currentUser.LastName) {
                     currentUser.LastName = updateCredentialsDto.LastName;
-                if (!string.IsNullOrEmpty(updateCredentialsDto.Address))
+                    changes.Add("LastName");
+                }
+                if (!string.IsNullOrEmpty(updateCredentialsDto.Address) && updateCredentialsDto.Address != currentUser.Address) {
                     currentUser.Address = updateCredentialsDto.Address;
+                    changes.Add("Address");
+                }
 
                 // Update Email if provided
-                if (!string.IsNullOrEmpty(updateCredentialsDto.Email))
-                {
+                if (!string.IsNullOrEmpty(updateCredentialsDto.Email) && updateCredentialsDto.Email != currentUser.Email) {
                     var existingUser = await _userManager.FindByEmailAsync(updateCredentialsDto.Email);
-                    if (existingUser != null && existingUser.Id != currentUser.Id)
-                    {
+                    if (existingUser != null && existingUser.Id != currentUser.Id) {
                         response.Message = "Email is already in use by another user.";
                         return response;
                     }
                     currentUser.Email = updateCredentialsDto.Email;
-                    // Optionally reset email confirmation if verification is required
-                    // currentUser.EmailConfirmed = false;
-                    // await _userManager.GenerateEmailConfirmationTokenAsync(currentUser);
+                    changes.Add("Email");
                 }
 
                 // Update Password if provided
-                if (!string.IsNullOrEmpty(updateCredentialsDto.NewPassword))
-                {
-                    // Basic password complexity check
-                    if (updateCredentialsDto.NewPassword.Length < 8)
-                    {
+                if (!string.IsNullOrEmpty(updateCredentialsDto.NewPassword)) {
+                    if (updateCredentialsDto.NewPassword.Length < 8) {
                         response.Message = "New password must be at least 8 characters.";
                         return response;
                     }
                     var passwordChangeResult = await _userManager.ChangePasswordAsync(currentUser, updateCredentialsDto.CurrentPassword, updateCredentialsDto.NewPassword);
-                    if (!passwordChangeResult.Succeeded)
-                    {
+                    if (!passwordChangeResult.Succeeded) {
                         response.Message = "Failed to update password. Reasons: ";
                         response.Message += string.Join(" # ", passwordChangeResult.Errors.Select(e => e.Description));
                         return response;
                     }
-                    // Note: User will need to log in again since the session isn't refreshed
+                    changes.Add("Password");
                 }
 
                 // Save changes to the user
                 var updateResult = await _userManager.UpdateAsync(currentUser);
-                if (!updateResult.Succeeded)
-                {
+                if (!updateResult.Succeeded) {
                     response.Message = "Failed to update credentials. Reasons: ";
                     response.Message += string.Join(" # ", updateResult.Errors.Select(e => e.Description));
                     return response;
                 }
 
-                // Log the update
-                await _logService.SaveNewLog(currentUser.UserName, "Updated credentials");
+                // Log the update (détail)
+                var logMsg = changes.Count > 0 ? $"Updated credentials: {string.Join(", ", changes)}" : "Updated credentials (no changes)";
+                await _logService.SaveNewLog(currentUser.UserName, logMsg);
 
                 response.IsSucceed = true;
                 response.StatusCode = 200;

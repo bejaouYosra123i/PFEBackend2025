@@ -17,5 +17,9 @@ namespace Backend_dotnet.Core.Dtos.General
         public decimal Total { get; set; }
         public string Status { get; set; }
         public List<InvestmentItemDto> Items { get; set; }
+        public string? NumRitm { get; set; }
+        public string? NumCoupa { get; set; }
+        public string? NumIyras { get; set; }
+        public string? IoNumber { get; set; }
     }
 } 

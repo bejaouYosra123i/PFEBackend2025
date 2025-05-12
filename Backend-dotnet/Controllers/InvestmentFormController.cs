@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Backend_dotnet.Core.Entities;
+using System;
 
 namespace Backend_dotnet.Controllers
 {
     [ApiController]
     [Route("api/InvestmentForm")]
+    [Authorize(Roles = "ADMIN")]
     public class InvestmentFormController : ControllerBase
     {
         private readonly IInvestmentFormService _service;
@@ -55,12 +57,37 @@ namespace Backend_dotnet.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id, [FromBody] DeleteInvestmentFormRequest request)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
-                return Unauthorized("Mot de passe incorrect.");
-            var deleted = await _service.DeleteAsync(id);
-            if (!deleted) return NotFound();
-            return NoContent();
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.Password))
+                {
+                    return BadRequest("Le mot de passe est requis");
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return Unauthorized("Utilisateur non authentifié");
+                }
+
+                if (!await _userManager.CheckPasswordAsync(user, request.Password))
+                {
+                    return Unauthorized("Mot de passe incorrect");
+                }
+
+                var deleted = await _service.DeleteAsync(id);
+                if (!deleted)
+                {
+                    return NotFound("La demande d'investissement n'a pas été trouvée");
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                // Log l'erreur ici
+                return StatusCode(500, "Une erreur est survenue lors de la suppression");
+            }
         }
 
         public class DeleteInvestmentFormRequest
@@ -68,4 +95,4 @@ namespace Backend_dotnet.Controllers
             public string Password { get; set; }
         }
     }
-} 
+}
