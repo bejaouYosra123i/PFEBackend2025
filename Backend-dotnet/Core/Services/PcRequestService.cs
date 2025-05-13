@@ -7,15 +7,18 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using Backend_dotnet.Core.Dtos;
 
 namespace Backend_dotnet.Core.Services
 {
     public class PcRequestService : IPcRequestService
     {
         private readonly ApplicationDbContext _context;
-        public PcRequestService(ApplicationDbContext context)
+        private readonly IAssetService _assetService;
+        public PcRequestService(ApplicationDbContext context, IAssetService assetService)
         {
             _context = context;
+            _assetService = assetService;
         }
 
         public async Task<PcRequest> AddRequestAsync(PcRequestDto dto)
@@ -61,6 +64,23 @@ namespace Backend_dotnet.Core.Services
             if (entity == null) return null;
             entity.Status = status;
             await _context.SaveChangesAsync();
+
+            // Création automatique d'un asset si la demande est validée
+            if (status == "Validée")
+            {
+                var assetDto = new AssetDto
+                {
+                    Description = $"PC {entity.PcType} demandé par {entity.FullName}",
+                    Category = entity.PcType,
+                    Status = "En service",
+                    AssignedTo = entity.FullName,
+                    Location = entity.Department,
+                    AcquisitionDate = DateTime.UtcNow,
+                    LastUpdate = DateTime.UtcNow
+                };
+                await _assetService.CreateAsync(assetDto);
+            }
+
             return new PcRequestReadDto
             {
                 Id = entity.Id,

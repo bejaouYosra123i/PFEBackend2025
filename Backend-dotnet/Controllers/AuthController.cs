@@ -4,6 +4,8 @@ using Backend_dotnet.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Backend_dotnet.Core.Dtos;
+using Microsoft.AspNetCore.Identity;
 
 namespace Backend_dotnet.Controllers
 {

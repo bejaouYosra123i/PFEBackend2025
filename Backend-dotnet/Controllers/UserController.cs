@@ -40,10 +40,10 @@ namespace Backend_dotnet.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            user.ImageUrl = $"/profile-images/{fileName}";
+            user.Avatar = $"/profile-images/{fileName}";
             await _userManager.UpdateAsync(user);
 
-            return Ok(new { imageUrl = user.ImageUrl });
+            return Ok(new { avatar = user.Avatar });
         }
     }
 } 

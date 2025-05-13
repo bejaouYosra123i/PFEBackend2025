@@ -37,6 +37,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IInvestmentFormService, InvestmentFormService>();
 builder.Services.AddScoped<IAssetScrubService, AssetScrubService>();
 builder.Services.AddScoped<IPcRequestService, PcRequestService>();
+builder.Services.AddScoped<IAssetService, Backend_dotnet.Core.Services.AssetService>();
 
 
 

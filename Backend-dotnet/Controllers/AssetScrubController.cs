@@ -14,10 +14,29 @@ namespace Backend_dotnet.Controllers
     {
         private readonly IAssetScrubService _service;
         private readonly UserManager<ApplicationUser> _userManager;
-        public AssetScrubController(IAssetScrubService service, UserManager<ApplicationUser> userManager)
+        private readonly ILogService _logService;
+        public AssetScrubController(IAssetScrubService service, UserManager<ApplicationUser> userManager, ILogService logService)
         {
             _service = service;
             _userManager = userManager;
+            _logService = logService;
+        }
+
+        [HttpPost("delete-batch")]
+        public async Task<IActionResult> DeleteBatch([FromBody] AssetScrubDeleteRequest req)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized("Utilisateur non authentifié");
+
+            foreach (var id in req.Ids)
+            {
+                var deleted = await _service.DeleteAsync(id);
+                if (!deleted)
+                    return NotFound($"L'actif avec l'ID {id} n'a pas été trouvé.");
+                await _logService.SaveNewLog(user.UserName, $"Suppression de l'actif ID={id}");
+            }
+            return NoContent();
         }
 
         [HttpGet]
@@ -46,28 +65,6 @@ namespace Backend_dotnet.Controllers
         {
             var deleted = await _service.DeleteAsync(id);
             if (!deleted) return NotFound();
-            return NoContent();
-        }
-
-        [HttpPost("delete-with-password")]
-        public async Task<IActionResult> DeleteWithPassword([FromBody] AssetScrubDeleteRequest req)
-        {
-            // Récupère l'utilisateur connecté
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized("Utilisateur non authentifié");
-
-            // Vérifie le mot de passe
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, req.Password);
-            if (!isPasswordValid)
-                return Unauthorized("Mot de passe incorrect");
-
-            foreach (var id in req.Ids)
-            {
-                var deleted = await _service.DeleteAsync(id);
-                if (!deleted)
-                    return NotFound($"L'actif avec l'ID {id} n'a pas été trouvé.");
-            }
             return NoContent();
         }
     }

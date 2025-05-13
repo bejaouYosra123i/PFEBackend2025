@@ -12,6 +12,8 @@ namespace Backend_dotnet.Core.Entities
 
         public string Address { get; set; }
 
+        public string? Avatar { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
 
