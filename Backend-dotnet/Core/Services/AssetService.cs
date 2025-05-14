@@ -13,10 +13,12 @@ namespace Backend_dotnet.Core.Services
     public class AssetService : IAssetService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogService _logService;
 
-        public AssetService(ApplicationDbContext context)
+        public AssetService(ApplicationDbContext context, ILogService logService)
         {
             _context = context;
+            _logService = logService;
         }
 
         public async Task<List<AssetDto>> GetAllAsync()
@@ -64,7 +66,7 @@ namespace Backend_dotnet.Core.Services
 
         public async Task<AssetDto> CreateAsync(AssetDto dto)
         {
-            // Génération automatique du SerialNumber
+            // Automatic SerialNumber generation
             int nextId = 1;
             if (await _context.Assets.AnyAsync())
             {
@@ -100,10 +102,17 @@ namespace Backend_dotnet.Core.Services
 
             if (asset == null) return null;
 
+            var oldStatus = asset.Status;
             asset.Status = status;
             asset.LastUpdate = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            // Log the status change
+            await _logService.SaveNewLog(
+                "System",
+                $"Asset {asset.SerialNumber} status changed from '{oldStatus}' to '{status}'"
+            );
 
             return new AssetDto
             {

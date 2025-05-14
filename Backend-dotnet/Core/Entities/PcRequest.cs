@@ -11,7 +11,7 @@ namespace Backend_dotnet.Core.Entities
         public string PcType { get; set; }
         public string Reason { get; set; }
         public string RequestedBy { get; set; }
-        public string SignaturesJson { get; set; } // Stocker les signatures en JSON
-        public string Status { get; set; } = "En attente";
+        public string SignaturesJson { get; set; } // Store signatures in JSON
+        public string Status { get; set; } = "Pending";
     }
 } 

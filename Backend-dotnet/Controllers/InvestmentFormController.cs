@@ -47,7 +47,7 @@ namespace Backend_dotnet.Controllers
             var user = await _userManager.GetUserAsync(User);
             var created = await _service.CreateAsync(dto);
             if (user != null)
-                await _logService.SaveNewLog(user.UserName, $"Création d'une nouvelle demande d'investissement ID={created.Id}");
+                await _logService.SaveNewLog(user.UserName, $"New investment request created ID={created.Id}");
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 

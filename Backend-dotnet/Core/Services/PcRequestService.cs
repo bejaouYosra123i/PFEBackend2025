@@ -15,10 +15,13 @@ namespace Backend_dotnet.Core.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IAssetService _assetService;
-        public PcRequestService(ApplicationDbContext context, IAssetService assetService)
+        private readonly ILogService _logService;
+
+        public PcRequestService(ApplicationDbContext context, IAssetService assetService, ILogService logService)
         {
             _context = context;
             _assetService = assetService;
+            _logService = logService;
         }
 
         public async Task<PcRequest> AddRequestAsync(PcRequestDto dto)
@@ -35,6 +38,10 @@ namespace Backend_dotnet.Core.Services
             };
             _context.PcRequests.Add(entity);
             await _context.SaveChangesAsync();
+
+            // Log the request creation
+            await _logService.SaveNewLog(dto.RequestedBy, $"New PC request created for {dto.FullName} - Type: {dto.PcType}");
+
             return entity;
         }
 
@@ -65,14 +72,14 @@ namespace Backend_dotnet.Core.Services
             entity.Status = status;
             await _context.SaveChangesAsync();
 
-            // Création automatique d'un asset si la demande est validée
-            if (status == "Validée")
+            // Automatic asset creation if request is approved
+            if (status == "Approved")
             {
                 var assetDto = new AssetDto
                 {
-                    Description = $"PC {entity.PcType} demandé par {entity.FullName}",
+                    Description = $"PC {entity.PcType} requested by {entity.FullName}",
                     Category = entity.PcType,
-                    Status = "En service",
+                    Status = "In Service",
                     AssignedTo = entity.FullName,
                     Location = entity.Department,
                     AcquisitionDate = DateTime.UtcNow,
