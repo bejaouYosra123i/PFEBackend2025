@@ -69,8 +69,18 @@ namespace Backend_dotnet.Core.Services
         {
             var entity = await _context.PcRequests.FindAsync(id);
             if (entity == null) return null;
+            var oldStatus = entity.Status;
             entity.Status = status;
             await _context.SaveChangesAsync();
+
+            // Log status change if Approved or Rejected
+            if (status == "Approved" || status == "Rejected")
+            {
+                await _logService.SaveNewLog(
+                    entity.RequestedBy,
+                    $"PC request for {entity.FullName} was {status.ToLower()} by manager."
+                );
+            }
 
             // Automatic asset creation if request is approved
             if (status == "Approved")
