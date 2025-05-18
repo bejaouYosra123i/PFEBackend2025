@@ -19,7 +19,7 @@ namespace Backend_dotnet.Core.DbContext
         public DbSet<AssetScrub> AssetScrubs { get; set; }
         public DbSet<PcRequest> PcRequests { get; set; }
         public DbSet<Asset> Assets { get; set; }
-
+        
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

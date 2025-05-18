@@ -5,42 +5,46 @@
 namespace Backend_dotnet.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTrackingFieldsToInvestmentForm : Migration
+    public partial class AddTrackingFieldsToInvestmentItem : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Et",
-                table: "InvestmentForms",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.DropColumn(
+                name: "Permissions",
+                table: "Users");
 
             migrationBuilder.AddColumn<string>(
                 name: "IoNumber",
-                table: "InvestmentForms",
+                table: "InvestmentItems",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
                 name: "NumCoupa",
-                table: "InvestmentForms",
+                table: "InvestmentItems",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
-                name: "NumIyras",
-                table: "InvestmentForms",
+                name: "NumRytm",
+                table: "InvestmentItems",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
-                name: "NumRitm",
-                table: "InvestmentForms",
+                name: "NumYiras",
+                table: "InvestmentItems",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.AddColumn<string>(
+                name: "Status",
+                table: "InvestmentItems",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
@@ -50,24 +54,31 @@ namespace Backend_dotnet.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Et",
-                table: "InvestmentForms");
-
-            migrationBuilder.DropColumn(
                 name: "IoNumber",
-                table: "InvestmentForms");
+                table: "InvestmentItems");
 
             migrationBuilder.DropColumn(
                 name: "NumCoupa",
-                table: "InvestmentForms");
+                table: "InvestmentItems");
 
             migrationBuilder.DropColumn(
-                name: "NumIyras",
-                table: "InvestmentForms");
+                name: "NumRytm",
+                table: "InvestmentItems");
 
             migrationBuilder.DropColumn(
-                name: "NumRitm",
-                table: "InvestmentForms");
+                name: "NumYiras",
+                table: "InvestmentItems");
+
+            migrationBuilder.DropColumn(
+                name: "Status",
+                table: "InvestmentItems");
+
+            migrationBuilder.AddColumn<string>(
+                name: "Permissions",
+                table: "Users",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
         }
     }
 }

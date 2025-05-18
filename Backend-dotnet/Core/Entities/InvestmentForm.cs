@@ -16,9 +16,5 @@ namespace Backend_dotnet.Core.Entities
         public decimal Total { get; set; }
         public string Status { get; set; }
         public ICollection<InvestmentItem> Items { get; set; }
-        public string? NumRitm { get; set; }
-        public string? NumCoupa { get; set; }
-        public string? NumIyras { get; set; }
-        public string? IoNumber { get; set; }
     }
 } 

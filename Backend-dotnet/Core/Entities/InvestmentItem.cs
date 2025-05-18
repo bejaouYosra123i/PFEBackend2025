@@ -15,5 +15,15 @@ namespace Backend_dotnet.Core.Entities
         public int InvestmentFormId { get; set; }
         [ForeignKey("InvestmentFormId")]
         public InvestmentForm InvestmentForm { get; set; }
+        public string? NumRitm { get; set; }
+        public string? NumCoupa { get; set; }
+        public string? NumIyras { get; set; }
+        public string? IoNumber { get; set; }
+
+        // Champs de suivi
+        public string CoupaNumber { get; set; }
+        public string RytmNumber { get; set; }
+        public string IyrasNumber { get; set; }
+        public string Status { get; set; } = "Pending";
     }
 } 

@@ -4,6 +4,7 @@ using Backend_dotnet.Core.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend_dotnet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250517142527_NomDeLaMigration")]
+    partial class NomDeLaMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -267,6 +270,9 @@ namespace Backend_dotnet.Migrations
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("IoNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -279,6 +285,15 @@ namespace Backend_dotnet.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumCoupa")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumIyras")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumRitm")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Observations")
@@ -319,10 +334,6 @@ namespace Backend_dotnet.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CoupaNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -333,41 +344,17 @@ namespace Backend_dotnet.Migrations
                     b.Property<int>("InvestmentFormId")
                         .HasColumnType("int");
 
-                    b.Property<string>("IoNumber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("IyrasNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NumCoupa")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NumIyras")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NumRitm")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<string>("RytmNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<decimal>("Shipping")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("SubTotal")
                         .HasColumnType("decimal(18,2)");
@@ -516,6 +503,46 @@ namespace Backend_dotnet.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("PcRequests");
+                });
+
+            modelBuilder.Entity("Backend_dotnet.Core.Entities.Tracking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CoupaNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InvestmentFormId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IoNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RytmNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("YirasNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvestmentFormId");
+
+                    b.ToTable("Trackings");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -674,6 +701,17 @@ namespace Backend_dotnet.Migrations
                 {
                     b.HasOne("Backend_dotnet.Core.Entities.InvestmentForm", "InvestmentForm")
                         .WithMany("Items")
+                        .HasForeignKey("InvestmentFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InvestmentForm");
+                });
+
+            modelBuilder.Entity("Backend_dotnet.Core.Entities.Tracking", b =>
+                {
+                    b.HasOne("Backend_dotnet.Core.Entities.InvestmentForm", "InvestmentForm")
+                        .WithMany()
                         .HasForeignKey("InvestmentFormId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

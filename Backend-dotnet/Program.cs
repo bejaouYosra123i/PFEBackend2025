@@ -41,6 +41,7 @@ builder.Services.AddScoped<IAssetService, Backend_dotnet.Core.Services.AssetServ
 
 
 
+
 //Add Identity
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()

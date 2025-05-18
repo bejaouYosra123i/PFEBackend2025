@@ -48,10 +48,6 @@ namespace Backend_dotnet.Core.Services
                 Observations = dto.Observations,
                 Total = dto.Total,
                 Status = dto.Status,
-                NumRitm = dto.NumRitm,
-                NumCoupa = dto.NumCoupa,
-                NumIyras = dto.NumIyras,
-                IoNumber = dto.IoNumber,
                 Items = dto.Items?.Select(i => new InvestmentItem
                 {
                     Description = i.Description,
@@ -60,7 +56,11 @@ namespace Backend_dotnet.Core.Services
                     Shipping = i.Shipping,
                     SubTotal = i.SubTotal,
                     Quantity = i.Quantity,
-                    Total = i.Total
+                    Total = i.Total,
+                    CoupaNumber = i.CoupaNumber,
+                    RytmNumber = i.RytmNumber,
+                    IoNumber = i.IoNumber,
+                    IyrasNumber = i.IyrasNumber
                 }).ToList()
             };
             _context.InvestmentForms.Add(form);
@@ -80,21 +80,23 @@ namespace Backend_dotnet.Core.Services
             form.Observations = dto.Observations;
             form.Total = dto.Total;
             form.Status = dto.Status;
-            form.NumRitm = dto.NumRitm;
-            form.NumCoupa = dto.NumCoupa;
-            form.NumIyras = dto.NumIyras;
-            form.IoNumber = dto.IoNumber;
+
             // Update items: simple version (remove all, add new)
             _context.InvestmentItems.RemoveRange(form.Items);
             form.Items = dto.Items?.Select(i => new InvestmentItem
             {
+                Id = i.Id,
                 Description = i.Description,
                 Supplier = i.Supplier,
                 UnitCost = i.UnitCost,
                 Shipping = i.Shipping,
                 SubTotal = i.SubTotal,
                 Quantity = i.Quantity,
-                Total = i.Total
+                Total = i.Total,
+                CoupaNumber = i.CoupaNumber,
+                RytmNumber = i.RytmNumber,
+                IoNumber = i.IoNumber,
+                IyrasNumber = i.IyrasNumber
             }).ToList();
             await _context.SaveChangesAsync();
             return ToDto(form);
@@ -147,19 +149,21 @@ namespace Backend_dotnet.Core.Services
                 Observations = form.Observations,
                 Total = form.Total,
                 Status = form.Status,
-                NumRitm = form.NumRitm,
-                NumCoupa = form.NumCoupa,
-                NumIyras = form.NumIyras,
-                IoNumber = form.IoNumber,
                 Items = form.Items?.Select(i => new InvestmentItemDto
                 {
+                    Id = i.Id,
                     Description = i.Description,
                     Supplier = i.Supplier,
                     UnitCost = i.UnitCost,
                     Shipping = i.Shipping,
                     SubTotal = i.SubTotal,
                     Quantity = i.Quantity,
-                    Total = i.Total
+                    Total = i.Total,
+                    CoupaNumber = i.CoupaNumber,
+                    RytmNumber = i.RytmNumber,
+                    IoNumber = i.IoNumber,
+                    IyrasNumber = i.IyrasNumber,
+                    Status = i.Status
                 }).ToList()
             };
         }
