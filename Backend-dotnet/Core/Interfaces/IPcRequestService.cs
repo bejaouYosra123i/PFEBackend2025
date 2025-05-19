@@ -9,7 +9,7 @@ namespace Backend_dotnet.Core.Interfaces
     {
         Task<PcRequest> AddRequestAsync(PcRequestDto dto);
         Task<List<PcRequestReadDto>> GetAllRequestsAsync();
-        Task<PcRequestReadDto?> UpdateStatusAsync(int id, string status);
+        Task<PcRequestReadDto?> UpdateStatusAsync(int id, string status, string managerName);
         // (Optionnel) Ajouter d'autres méthodes comme GetAll, GetById, etc.
     }
 } 

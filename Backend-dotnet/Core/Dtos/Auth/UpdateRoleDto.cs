@@ -14,7 +14,10 @@ namespace Backend_dotnet.Core.Dtos.Auth
     {
         ADMIN,
         MANAGER,
-        USER
+        USER,
+        IT_MANAGER,
+        RH_MANAGER,
+        PLANT_MANAGER
     }
 
 

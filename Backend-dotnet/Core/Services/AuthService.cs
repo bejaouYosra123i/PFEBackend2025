@@ -42,8 +42,11 @@ namespace Backend_dotnet.Core.Services
             bool isAdminRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.ADMIN);
             bool isManagerRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.MANAGER);
             bool isUserRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.USER);
+            bool isITManagerRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.IT_MANAGER);
+            bool isRHManagerRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.RH_MANAGER);
+            bool isPlantManagerRoleExists = await _roleManager.RoleExistsAsync(StaticUserRoles.PLANT_MANAGER);
 
-            if (isAdminRoleExists && isManagerRoleExists && isUserRoleExists)
+            if (isAdminRoleExists && isManagerRoleExists && isUserRoleExists && isITManagerRoleExists && isRHManagerRoleExists && isPlantManagerRoleExists)
                 return new GeneralServiceResponseDto()
                 {
                     IsSucceed = true,
@@ -51,9 +54,18 @@ namespace Backend_dotnet.Core.Services
                     Message = "Roles Seeding is Already Done"
                 };
 
-            await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.ADMIN));
-            await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.MANAGER));
-            await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.USER));
+            if (!isAdminRoleExists)
+                await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.ADMIN));
+            if (!isManagerRoleExists)
+                await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.MANAGER));
+            if (!isUserRoleExists)
+                await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.USER));
+            if (!isITManagerRoleExists)
+                await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.IT_MANAGER));
+            if (!isRHManagerRoleExists)
+                await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.RH_MANAGER));
+            if (!isPlantManagerRoleExists)
+                await _roleManager.CreateAsync(new IdentityRole(StaticUserRoles.PLANT_MANAGER));
 
             return new GeneralServiceResponseDto()
             {
@@ -188,12 +200,19 @@ namespace Backend_dotnet.Core.Services
                     Message = "Cannot change the role of an admin"
                 };
 
-            if (updateRoleDto.NewRole != RoleType.USER && updateRoleDto.NewRole != RoleType.MANAGER && updateRoleDto.NewRole != RoleType.ADMIN)
+            if (
+                updateRoleDto.NewRole != RoleType.USER &&
+                updateRoleDto.NewRole != RoleType.MANAGER &&
+                updateRoleDto.NewRole != RoleType.ADMIN &&
+                updateRoleDto.NewRole != RoleType.IT_MANAGER &&
+                updateRoleDto.NewRole != RoleType.RH_MANAGER &&
+                updateRoleDto.NewRole != RoleType.PLANT_MANAGER
+            )
                 return new GeneralServiceResponseDto()
                 {
                     IsSucceed = false,
                     StatusCode = 400,
-                    Message = "Invalid role. Only USER or MANAGER or ADMIN can be assigned"
+                    Message = "Invalid role. Only USER, MANAGER, ADMIN, IT_MANAGER, RH_MANAGER, or PLANT_MANAGER can be assigned"
                 };
 
             // Update the user's role

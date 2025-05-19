@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
 using System.IO;
+using System.Security.Claims;
 
 namespace Backend_dotnet.Controllers
 {
@@ -43,12 +44,26 @@ namespace Backend_dotnet.Controllers
         /// <summary>
         /// Mettre à jour le statut d'une demande de PC
         /// </summary>
-        [Authorize(Roles = "MANAGER")]
+        [Authorize(Roles = "MANAGER,IT_MANAGER,RH_MANAGER,PLANT_MANAGER")]
         [HttpPatch("requests/{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusDto dto)
         {
-            var req = await _service.UpdateStatusAsync(id, dto.Status);
-            if (req == null) return NotFound();
+            // On récupère le rôle du manager connecté (le premier rôle trouvé parmi les rôles requis)
+            var possibleRoles = new[] { "MANAGER", "IT_MANAGER", "RH_MANAGER", "PLANT_MANAGER" };
+            var managerRole = User.Claims
+                .Where(c => c.Type == ClaimTypes.Role && possibleRoles.Contains(c.Value))
+                .Select(c => c.Value)
+                .FirstOrDefault();
+            if (string.IsNullOrEmpty(managerRole))
+            {
+                return BadRequest("Manager role not found");
+            }
+
+            var req = await _service.UpdateStatusAsync(id, dto.Status, managerRole);
+            if (req == null)
+            {
+                return BadRequest("You have already approved this request");
+            }
             return Ok(req);
         }
     }
