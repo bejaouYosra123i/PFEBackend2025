@@ -26,6 +26,14 @@ namespace Backend_dotnet.Core.Services
 
         public async Task<PcRequest> AddRequestAsync(PcRequestDto dto)
         {
+            // Liste des types d'équipements autorisés
+            var allowedTypes = new[] { "PC de bureau", "PC Portable", "Clavier", "Écran", "Câble", "Modem", "Souris" };
+            
+            if (!allowedTypes.Contains(dto.PcType))
+            {
+                throw new ArgumentException($"Type d'équipement non autorisé. Types autorisés : {string.Join(", ", allowedTypes)}");
+            }
+
             var entity = new PcRequest
             {
                 FullName = dto.FullName,
