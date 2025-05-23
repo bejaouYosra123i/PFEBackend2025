@@ -1,4 +1,5 @@
 ﻿using Backend_dotnet.Core.Entities;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,6 @@ namespace Backend_dotnet.Core.DbContext
         {
         }
 
-
         public DbSet<Log> Logs { get; set;}
         public DbSet<Message> Messages { get; set;}
         public DbSet<InvestmentForm> InvestmentForms { get; set; }
@@ -19,7 +19,11 @@ namespace Backend_dotnet.Core.DbContext
         public DbSet<AssetScrub> AssetScrubs { get; set; }
         public DbSet<PcRequest> PcRequests { get; set; }
         public DbSet<Asset> Assets { get; set; }
+        public DbSet<Privilege> Privileges { get; set; }
+        public DbSet<UserPrivilege> UserPrivileges { get; set; }
         
+
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -59,9 +63,7 @@ namespace Backend_dotnet.Core.DbContext
             });
 
 
-
+            
         }
-
-
     }
 }

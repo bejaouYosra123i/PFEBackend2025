@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Backend_dotnet.Core.Dtos;
 using Microsoft.AspNetCore.Identity;
+using Backend_dotnet.Core.Services;
+using System.Security.Claims;
 
 namespace Backend_dotnet.Controllers
 {
@@ -14,10 +16,12 @@ namespace Backend_dotnet.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly PrivilegeService _privilegeService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, PrivilegeService privilegeService)
         {
             _authService = authService;
+            _privilegeService = privilegeService;
         }
 
         // Route -> Seed Roles to DB
@@ -32,9 +36,14 @@ namespace Backend_dotnet.Controllers
         // Route -> Register
         [HttpPost]
         [Route("register")]
-        [Authorize(Roles = StaticUserRoles.ADMIN)]
+        [Authorize]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
+            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
+            if (!isAdmin && !hasManageUsers)
+                return Forbid();
             var registerResult = await _authService.RegisterAsync(User, registerDto);
             return StatusCode(registerResult.StatusCode, registerResult.Message);
         }
@@ -60,11 +69,15 @@ namespace Backend_dotnet.Controllers
         // Manager and User Roles don't have access to this Route
         [HttpPost]
         [Route("update-role")]
-        [Authorize(Roles = StaticUserRoles.ADMIN)]
+        [Authorize]
         public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto updateRoleDto)
         {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
+            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
+            if (!isAdmin && !hasManageUsers)
+                return Forbid();
             var updateRoleResult = await _authService.UpdateRoleAsync(User, updateRoleDto);
-
             if (updateRoleResult.IsSucceed)
             {
                 return Ok(updateRoleResult.Message);
@@ -127,22 +140,30 @@ namespace Backend_dotnet.Controllers
         // Route -> List of all users with details
         [HttpGet]
         [Route("users")]
-        [Authorize(Roles = StaticUserRoles.ADMIN)]
-
+        [Authorize]
         public async Task<ActionResult<IEnumerable<UserInfoResult>>> GetUsersList()
         {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
+            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
+            if (!isAdmin && !hasManageUsers)
+                return Forbid();
             var usersList = await _authService.GetUsersListAsync();
-
             return Ok(usersList);
         }
 
         // Route -> Get a User by UserName
         [HttpGet]
-        [Authorize(Roles = StaticUserRoles.ADMIN)]
-
+        [Authorize]
         [Route("users/{userName}")]
         public async Task<ActionResult<UserInfoResult>> GetUserDetailsByUserName([FromRoute] string userName)
         {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
+            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
+            if (!isAdmin && !hasManageUsers)
+                return Forbid();
+
             var user = await _authService.GetUserDetailsByUserNameAsync(userName);
             if (user is not null)
             {
@@ -166,9 +187,14 @@ namespace Backend_dotnet.Controllers
 
         // Route -> Delete user by id (simple, sans vérification de mot de passe)
         [HttpDelete("users/{id}")]
-        [Authorize(Roles = StaticUserRoles.ADMIN)]
+        [Authorize]
         public async Task<IActionResult> DeleteUser(string id)
         {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
+            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
+            if (!isAdmin && !hasManageUsers)
+                return Forbid();
             var result = await _authService.DeleteUserByIdAsync(User, id);
             if (result.IsSucceed)
                 return Ok(result.Message);
