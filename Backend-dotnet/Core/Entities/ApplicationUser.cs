@@ -20,6 +20,7 @@ namespace Backend_dotnet.Core.Entities
         [NotMapped]
         public IList<string> Roles { get; set; }
 
+        public virtual ICollection<UserPrivilege> UserPrivileges { get; set; }
 
     }
 }

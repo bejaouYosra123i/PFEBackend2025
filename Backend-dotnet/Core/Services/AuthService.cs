@@ -26,13 +26,15 @@ namespace Backend_dotnet.Core.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogService _logService;
         private readonly IConfiguration _configuration;
+        private readonly PrivilegeService _privilegeService;
 
-        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogService logService, IConfiguration configuration)
+        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogService logService, IConfiguration configuration, PrivilegeService privilegeService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _logService = logService;
             _configuration = configuration;
+            _privilegeService = privilegeService;
         }
         #endregion
 
@@ -169,7 +171,6 @@ namespace Backend_dotnet.Core.Services
         #region UpdateRoleAsync
         public async Task<GeneralServiceResponseDto> UpdateRoleAsync(ClaimsPrincipal User, UpdateRoleDto updateRoleDto)
         {
-
             var user = await _userManager.FindByNameAsync(updateRoleDto.UserName);
             if (user is null)
                 return new GeneralServiceResponseDto()
@@ -178,28 +179,27 @@ namespace Backend_dotnet.Core.Services
                     StatusCode = 404,
                     Message = "User not found"
                 };
-
-            // Only ADMIN can update roles
-            if (!User.IsInRole(StaticUserRoles.ADMIN))
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
+            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
+            if (!isAdmin && !hasManageUsers)
                 return new GeneralServiceResponseDto()
                 {
                     IsSucceed = false,
                     StatusCode = 403,
-                    Message = "Only admins can change roles"
+                    Message = "Only admins or users with ManageUsers privilege can change roles"
                 };
-
             // Get current roles of the target user
             var userRoles = await _userManager.GetRolesAsync(user);
-
-            // Prevent changing another ADMIN's role
+            // Bloquer la modification du rôle d'un ADMIN (même pour ceux ayant le privilège)
             if (userRoles.Contains(StaticUserRoles.ADMIN))
                 return new GeneralServiceResponseDto()
                 {
                     IsSucceed = false,
                     StatusCode = 403,
-                    Message = "Cannot change the role of an admin"
+                    Message = "Cannot change the role of an admin user"
                 };
-
+            // Autoriser la modification pour USER, MANAGER, etc.
             if (
                 updateRoleDto.NewRole != RoleType.USER &&
                 updateRoleDto.NewRole != RoleType.MANAGER &&
@@ -214,12 +214,10 @@ namespace Backend_dotnet.Core.Services
                     StatusCode = 400,
                     Message = "Invalid role. Only USER, MANAGER, ADMIN, IT_MANAGER, RH_MANAGER, or PLANT_MANAGER can be assigned"
                 };
-
             // Update the user's role
             await _userManager.RemoveFromRolesAsync(user, userRoles);
             await _userManager.AddToRoleAsync(user, updateRoleDto.NewRole.ToString());
             await _logService.SaveNewLog(user.UserName, $"Role updated to {updateRoleDto.NewRole}");
-
             return new GeneralServiceResponseDto()
             {
                 IsSucceed = true,
