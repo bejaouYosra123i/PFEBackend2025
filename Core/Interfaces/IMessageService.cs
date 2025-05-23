@@ -9,5 +9,6 @@ namespace Backend_dotnet.Core.Interfaces
         Task<GeneralServiceResponseDto> CreateNewMessageAsync(ClaimsPrincipal User, CreateMessageDto createMessageDto);
         Task<IEnumerable<GetMessageDto>> GetMessagesAsync();
         Task<IEnumerable<GetMessageDto>> GetMyMessagesAsync(ClaimsPrincipal User);
+        Task<bool> MarkMessageAsDone(long messageId);
     }
 }
