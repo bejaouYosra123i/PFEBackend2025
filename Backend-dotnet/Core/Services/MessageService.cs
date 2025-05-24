@@ -25,7 +25,8 @@ namespace Backend_dotnet.Core.Services
         
         public async Task<GeneralServiceResponseDto> CreateNewMessageAsync(ClaimsPrincipal User, CreateMessageDto createMessageDto)
         {
-            if (User.Identity.Name == createMessageDto.ReceiverUserName)
+            var senderUserName = User?.Identity?.Name ?? "Anonymous";
+            if (senderUserName == createMessageDto.ReceiverUserName)
                 return new GeneralServiceResponseDto()
                 {
                     IsSucceed = false,
@@ -44,13 +45,15 @@ namespace Backend_dotnet.Core.Services
 
             Message newMessage = new Message()
             {
-                SenderUserName = User.Identity.Name,
+                SenderUserName = senderUserName,
                 ReceiverUserName = createMessageDto.ReceiverUserName,
-                Text = createMessageDto.Text
+                Text = createMessageDto.Text,
+                Type = createMessageDto.Type ?? "GENERAL",
+                Status = createMessageDto.Status ?? "NEW"
             };
             await _context.Messages.AddAsync(newMessage);
             await _context.SaveChangesAsync();
-            await _logService.SaveNewLog(User.Identity.Name, "Send Message");
+            await _logService.SaveNewLog(senderUserName, "Send Message");
 
             return new GeneralServiceResponseDto()
             {
@@ -69,6 +72,8 @@ namespace Backend_dotnet.Core.Services
                     SenderUserName = q.SenderUserName,
                     ReceiverUserName = q.ReceiverUserName,
                     Text = q.Text,
+                    Type = q.Type,
+                    Status = q.Status,
                     CreatedAt = q.CreatedAt
                 })
                 .OrderByDescending(q => q.CreatedAt)
@@ -90,6 +95,8 @@ namespace Backend_dotnet.Core.Services
                  SenderUserName = q.SenderUserName,
                  ReceiverUserName = q.ReceiverUserName,
                  Text = q.Text,
+                 Type = q.Type,
+                 Status = q.Status,
                  CreatedAt = q.CreatedAt
              })
              .OrderByDescending(q => q.CreatedAt)
@@ -98,5 +105,13 @@ namespace Backend_dotnet.Core.Services
             return messages;
         }
         
+        public async Task<bool> MarkMessageAsDone(long messageId)
+        {
+            var msg = await _context.Messages.FindAsync(messageId);
+            if (msg == null) return false;
+            msg.Status = "DONE";
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

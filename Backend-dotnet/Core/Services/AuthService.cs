@@ -484,5 +484,39 @@ namespace Backend_dotnet.Core.Services
             }
             return response;
         }
+
+        public async Task<GeneralServiceResponseDto> ResetPasswordAsync(string userName, string? newPassword = null)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null)
+                return new GeneralServiceResponseDto { IsSucceed = false, StatusCode = 404, Message = "User not found" };
+
+            // Génère un mot de passe aléatoire si non fourni
+            if (string.IsNullOrWhiteSpace(newPassword))
+            {
+                newPassword = GenerateRandomPassword();
+            }
+
+            // Supprime l'ancien mot de passe et ajoute le nouveau
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (!result.Succeeded)
+            {
+                var errorString = string.Join(", ", result.Errors.Select(e => e.Description));
+                return new GeneralServiceResponseDto { IsSucceed = false, StatusCode = 400, Message = errorString };
+            }
+            await _logService.SaveNewLog(user.UserName, "Password reset by admin");
+            return new GeneralServiceResponseDto { IsSucceed = true, StatusCode = 200, Message = newPassword };
+        }
+
+        private string GenerateRandomPassword(int length = 10)
+        {
+            const string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()";
+            var res = new StringBuilder();
+            var rnd = new Random();
+            while (0 < length--)
+                res.Append(valid[rnd.Next(valid.Length)]);
+            return res.ToString();
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace Backend_dotnet.Controllers
 
         [HttpPost]
         [Route("create")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> CreateNewMessage([FromBody] CreateMessageDto createMessageDto)
         {
             var result = await _messageService.CreateNewMessageAsync(User, createMessageDto);
@@ -47,6 +47,16 @@ namespace Backend_dotnet.Controllers
         {
             var messages = await _messageService.GetMessagesAsync();
             return Ok(messages);
+        }
+
+        // PATCH: api/Messages/{id}/mark-done
+        [HttpPatch("{id}/mark-done")]
+        [Authorize(Roles = StaticUserRoles.ManagerAdmin)]
+        public async Task<IActionResult> MarkMessageAsDone(long id)
+        {
+            var result = await _messageService.MarkMessageAsDone(id);
+            if (!result) return NotFound();
+            return Ok("Message marked as done");
         }
     }
 }

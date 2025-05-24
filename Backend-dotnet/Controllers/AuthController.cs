@@ -8,6 +8,7 @@ using Backend_dotnet.Core.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Backend_dotnet.Core.Services;
 using System.Security.Claims;
+using Backend_dotnet.Core.Entities;
 
 namespace Backend_dotnet.Controllers
 {
@@ -17,11 +18,13 @@ namespace Backend_dotnet.Controllers
     {
         private readonly IAuthService _authService;
         private readonly PrivilegeService _privilegeService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AuthController(IAuthService authService, PrivilegeService privilegeService)
+        public AuthController(IAuthService authService, PrivilegeService privilegeService, UserManager<ApplicationUser> userManager)
         {
             _authService = authService;
             _privilegeService = privilegeService;
+            _userManager = userManager;
         }
 
         // Route -> Seed Roles to DB
@@ -211,5 +214,34 @@ namespace Backend_dotnet.Controllers
         //         return Ok(result.Message);
         //     return StatusCode(result.StatusCode, result.Message);
         // }
+
+        // Route -> Get List of all admin usernames
+        [HttpGet]
+        [Route("admin-usernames")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<string>>> GetAdminUserNamesList()
+        {
+            var admins = await _userManager.GetUsersInRoleAsync("ADMIN");
+            var usernames = admins.Select(u => u.UserName).ToList();
+            return Ok(usernames);
+        }
+
+        // Route -> Reset password for a user (admin only)
+        [HttpPost]
+        [Route("reset-password")]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _authService.ResetPasswordAsync(dto.UserName, dto.NewPassword);
+            if (result.IsSucceed)
+                return Ok(new { newPassword = result.Message });
+            return StatusCode(result.StatusCode, result.Message);
+        }
+    }
+
+    public class ResetPasswordDto
+    {
+        public string UserName { get; set; }
+        public string? NewPassword { get; set; }
     }
 }

@@ -19,6 +19,8 @@ namespace Backend_dotnet.Core.Interfaces
 
         Task<GeneralServiceResponseDto> DeleteUserByIdAsync(System.Security.Claims.ClaimsPrincipal adminUser, string userId);
 
+        Task<GeneralServiceResponseDto> ResetPasswordAsync(string userName, string? newPassword = null);
+
 
 
 
