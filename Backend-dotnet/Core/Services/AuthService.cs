@@ -353,106 +353,6 @@ namespace Backend_dotnet.Core.Services
             };
         }
 
-        public async Task<GeneralServiceResponseDto> UpdateCredentialsAsync(ClaimsPrincipal User, UpdateCredentialsDto updateCredentialsDto)
-        {
-
-            var response = new GeneralServiceResponseDto
-            {
-                IsSucceed = false,
-                StatusCode = 400,
-                Message = ""
-            };
-
-            try
-            {
-                // Get the current user from the ClaimsPrincipal
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    response.Message = "User identity not found.";
-                    return response;
-                }
-
-                var currentUser = await _userManager.FindByIdAsync(userId);
-                if (currentUser == null)
-                {
-                    response.Message = "User not found.";
-                    return response;
-                }
-
-                // Verify the current password
-                var isPasswordValid = await _userManager.CheckPasswordAsync(currentUser, updateCredentialsDto.CurrentPassword);
-                if (!isPasswordValid)
-                {
-                    response.Message = "Current password is incorrect.";
-                    return response;
-                }
-
-                // Update FirstName, LastName, and Address if provided
-                var changes = new List<string>();
-                if (!string.IsNullOrEmpty(updateCredentialsDto.FirstName) && updateCredentialsDto.FirstName != currentUser.FirstName) {
-                    currentUser.FirstName = updateCredentialsDto.FirstName;
-                    changes.Add("FirstName");
-                }
-                if (!string.IsNullOrEmpty(updateCredentialsDto.LastName) && updateCredentialsDto.LastName != currentUser.LastName) {
-                    currentUser.LastName = updateCredentialsDto.LastName;
-                    changes.Add("LastName");
-                }
-                if (!string.IsNullOrEmpty(updateCredentialsDto.Address) && updateCredentialsDto.Address != currentUser.Address) {
-                    currentUser.Address = updateCredentialsDto.Address;
-                    changes.Add("Address");
-                }
-
-                // Update Email if provided
-                if (!string.IsNullOrEmpty(updateCredentialsDto.Email) && updateCredentialsDto.Email != currentUser.Email) {
-                    var existingUser = await _userManager.FindByEmailAsync(updateCredentialsDto.Email);
-                    if (existingUser != null && existingUser.Id != currentUser.Id) {
-                        response.Message = "Email is already in use by another user.";
-                        return response;
-                    }
-                    currentUser.Email = updateCredentialsDto.Email;
-                    changes.Add("Email");
-                }
-
-                // Update Password if provided
-                if (!string.IsNullOrEmpty(updateCredentialsDto.NewPassword)) {
-                    if (updateCredentialsDto.NewPassword.Length < 8) {
-                        response.Message = "New password must be at least 8 characters.";
-                        return response;
-                    }
-                    var passwordChangeResult = await _userManager.ChangePasswordAsync(currentUser, updateCredentialsDto.CurrentPassword, updateCredentialsDto.NewPassword);
-                    if (!passwordChangeResult.Succeeded) {
-                        response.Message = "Failed to update password. Reasons: ";
-                        response.Message += string.Join(" # ", passwordChangeResult.Errors.Select(e => e.Description));
-                        return response;
-                    }
-                    changes.Add("Password");
-                }
-
-                // Save changes to the user
-                var updateResult = await _userManager.UpdateAsync(currentUser);
-                if (!updateResult.Succeeded) {
-                    response.Message = "Failed to update credentials. Reasons: ";
-                    response.Message += string.Join(" # ", updateResult.Errors.Select(e => e.Description));
-                    return response;
-                }
-
-                // Log the update (détail)
-                var logMsg = changes.Count > 0 ? $"Updated credentials: {string.Join(", ", changes)}" : "Updated credentials (no changes)";
-                await _logService.SaveNewLog(currentUser.UserName, logMsg);
-
-                response.IsSucceed = true;
-                response.StatusCode = 200;
-                response.Message = "Credentials updated successfully.";
-            }
-            catch (Exception ex)
-            {
-                response.Message = "An error occurred while updating credentials. Details: " + ex.Message;
-            }
-
-            return response;
-        }
-
         public async Task<GeneralServiceResponseDto> DeleteUserByIdAsync(System.Security.Claims.ClaimsPrincipal adminUser, string userId)
         {
             var response = new GeneralServiceResponseDto();
@@ -517,6 +417,57 @@ namespace Backend_dotnet.Core.Services
             while (0 < length--)
                 res.Append(valid[rnd.Next(valid.Length)]);
             return res.ToString();
+        }
+
+        public async Task<GeneralServiceResponseDto> UpdateProfileAsync(System.Security.Claims.ClaimsPrincipal user, UpdateProfileDto dto)
+        {
+            var response = new GeneralServiceResponseDto { IsSucceed = false, StatusCode = 400 };
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) { response.Message = "User identity not found."; return response; }
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            if (currentUser == null) { response.Message = "User not found."; return response; }
+            bool changed = false;
+            if (!string.IsNullOrEmpty(dto.FirstName) && dto.FirstName != currentUser.FirstName) { currentUser.FirstName = dto.FirstName; changed = true; }
+            if (!string.IsNullOrEmpty(dto.LastName) && dto.LastName != currentUser.LastName) { currentUser.LastName = dto.LastName; changed = true; }
+            if (!string.IsNullOrEmpty(dto.Address) && dto.Address != currentUser.Address) { currentUser.Address = dto.Address; changed = true; }
+            if (!string.IsNullOrEmpty(dto.Email) && dto.Email != currentUser.Email) {
+                var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+                if (existingUser != null && existingUser.Id != currentUser.Id) { response.Message = "Email is already in use by another user."; return response; }
+                currentUser.Email = dto.Email; changed = true;
+            }
+            if (!changed) { response.Message = "No changes detected."; return response; }
+            var updateResult = await _userManager.UpdateAsync(currentUser);
+            if (!updateResult.Succeeded) {
+                response.Message = "Failed to update profile. Reasons: " + string.Join(" # ", updateResult.Errors.Select(e => e.Description));
+                return response;
+            }
+            await _logService.SaveNewLog(currentUser.UserName, "Updated profile");
+            response.IsSucceed = true;
+            response.StatusCode = 200;
+            response.Message = "Profile updated successfully.";
+            return response;
+        }
+
+        public async Task<GeneralServiceResponseDto> UpdatePasswordAsync(System.Security.Claims.ClaimsPrincipal user, UpdatePasswordDto dto)
+        {
+            var response = new GeneralServiceResponseDto { IsSucceed = false, StatusCode = 400 };
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) { response.Message = "User identity not found."; return response; }
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            if (currentUser == null) { response.Message = "User not found."; return response; }
+            var isPasswordValid = await _userManager.CheckPasswordAsync(currentUser, dto.CurrentPassword);
+            if (!isPasswordValid) { response.Message = "Current password is incorrect."; return response; }
+            if (dto.NewPassword.Length < 8) { response.Message = "New password must be at least 8 characters."; return response; }
+            var passwordChangeResult = await _userManager.ChangePasswordAsync(currentUser, dto.CurrentPassword, dto.NewPassword);
+            if (!passwordChangeResult.Succeeded) {
+                response.Message = "Failed to update password. Reasons: " + string.Join(" # ", passwordChangeResult.Errors.Select(e => e.Description));
+                return response;
+            }
+            await _logService.SaveNewLog(currentUser.UserName, "Password updated");
+            response.IsSucceed = true;
+            response.StatusCode = 200;
+            response.Message = "Password updated successfully.";
+            return response;
         }
     }
 }

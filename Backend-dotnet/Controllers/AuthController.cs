@@ -114,31 +114,27 @@ namespace Backend_dotnet.Controllers
             }
         }
 
-
-
         [HttpPut]
-        [Route("update-credentials")]
+        [Route("update-profile")]
         [Authorize]
-        public async Task<IActionResult> UpdateCredentials([FromBody] UpdateCredentialsDto updateCredentialsDto)
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var result = await _authService.UpdateCredentialsAsync(User, updateCredentialsDto);
-
+            var result = await _authService.UpdateProfileAsync(User, dto);
             if (result.IsSucceed)
-            {
                 return Ok(result.Message);
-            }
-            else
-            {
-                return StatusCode(result.StatusCode, result.Message);
-            }
+            return StatusCode(result.StatusCode, result.Message);
         }
 
-
+        [HttpPut]
+        [Route("update-password")]
+        [Authorize]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
+        {
+            var result = await _authService.UpdatePasswordAsync(User, dto);
+            if (result.IsSucceed)
+                return Ok(result.Message);
+            return StatusCode(result.StatusCode, result.Message);
+        }
 
         // Route -> List of all users with details
         [HttpGet]

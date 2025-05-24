@@ -14,15 +14,9 @@ namespace Backend_dotnet.Core.Interfaces
         Task<IEnumerable<UserInfoResult>> GetUsersListAsync();
         Task<UserInfoResult?> GetUserDetailsByUserNameAsync(string userName);
         Task<IEnumerable<string>> GetUsernamesListAsync();
-
-        Task<GeneralServiceResponseDto> UpdateCredentialsAsync(ClaimsPrincipal User, UpdateCredentialsDto updateCredentialsDto);
-
         Task<GeneralServiceResponseDto> DeleteUserByIdAsync(System.Security.Claims.ClaimsPrincipal adminUser, string userId);
-
         Task<GeneralServiceResponseDto> ResetPasswordAsync(string userName, string? newPassword = null);
-
-
-
-
+        Task<GeneralServiceResponseDto> UpdateProfileAsync(System.Security.Claims.ClaimsPrincipal user, UpdateProfileDto dto);
+        Task<GeneralServiceResponseDto> UpdatePasswordAsync(System.Security.Claims.ClaimsPrincipal user, UpdatePasswordDto dto);
     }
 }
