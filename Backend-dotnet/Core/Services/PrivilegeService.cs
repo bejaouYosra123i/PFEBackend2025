@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Backend_dotnet.Core.DbContext;
 using Backend_dotnet.Core.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -15,17 +16,46 @@ namespace Backend_dotnet.Core.Services
             _dbContext = dbContext;
         }
 
+        // Obtenir tous les privilèges
+        public async Task<IEnumerable<Privilege>> GetAllPrivilegesAsync()
+        {
+            return await _dbContext.Privileges.ToListAsync();
+        }
+
+        // Obtenir les privilèges d'un utilisateur
+        public async Task<IEnumerable<UserPrivilege>> GetUserPrivilegesAsync(string userId)
+        {
+            return await _dbContext.UserPrivileges
+                .Include(up => up.Privilege)
+                .Where(up => up.UserId == userId)
+                .ToListAsync();
+        }
+
         // Attribuer un privilège temporaire à un utilisateur
         public async Task<bool> AssignPrivilegeToUserAsync(string userId, int privilegeId, DateTime? startDate, DateTime? endDate)
         {
-            var userPrivilege = new UserPrivilege
+            var privilege = await _dbContext.Privileges.FindAsync(privilegeId);
+            if (privilege == null) return false;
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null) return false;
+            var existingPrivilege = await _dbContext.UserPrivileges
+                .FirstOrDefaultAsync(up => up.UserId == userId && up.PrivilegeId == privilegeId);
+            if (existingPrivilege != null)
             {
-                UserId = userId,
-                PrivilegeId = privilegeId,
-                StartDate = startDate,
-                EndDate = endDate
-            };
-            _dbContext.UserPrivileges.Add(userPrivilege);
+                existingPrivilege.StartDate = startDate;
+                existingPrivilege.EndDate = endDate;
+            }
+            else
+            {
+                var userPrivilege = new UserPrivilege
+                {
+                    UserId = userId,
+                    PrivilegeId = privilegeId,
+                    StartDate = startDate,
+                    EndDate = endDate
+                };
+                _dbContext.UserPrivileges.Add(userPrivilege);
+            }
             await _dbContext.SaveChangesAsync();
             return true;
         }
