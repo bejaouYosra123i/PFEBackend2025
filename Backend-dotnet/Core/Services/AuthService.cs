@@ -10,15 +10,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-
 namespace Backend_dotnet.Core.Services
-
-
-
 {
-
-
-
     public class AuthService : IAuthService
     {
         #region Constructor & DI
@@ -26,15 +19,13 @@ namespace Backend_dotnet.Core.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogService _logService;
         private readonly IConfiguration _configuration;
-        private readonly PrivilegeService _privilegeService;
 
-        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogService logService, IConfiguration configuration, PrivilegeService privilegeService)
+        public AuthService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogService logService, IConfiguration configuration)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _logService = logService;
             _configuration = configuration;
-            _privilegeService = privilegeService;
         }
         #endregion
 
@@ -81,7 +72,6 @@ namespace Backend_dotnet.Core.Services
         #region RegisterAsync
         public async Task<GeneralServiceResponseDto> RegisterAsync(ClaimsPrincipal User, RegisterDto registerDto)
         {
-
             // Only ADMIN can register new users
             //if (!User.IsInRole(StaticUserRoles.ADMIN))
             //    return new GeneralServiceResponseDto()
@@ -90,7 +80,6 @@ namespace Backend_dotnet.Core.Services
             //        StatusCode = 403,
             //        Message = "Only admins can register new users"
             //    };
-
 
             var isExistsUser = await _userManager.FindByNameAsync(registerDto.UserName);
             if (isExistsUser is not null)
@@ -181,17 +170,16 @@ namespace Backend_dotnet.Core.Services
                 };
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
-            if (!isAdmin && !hasManageUsers)
+            if (!isAdmin)
                 return new GeneralServiceResponseDto()
                 {
                     IsSucceed = false,
                     StatusCode = 403,
-                    Message = "Only admins or users with ManageUsers privilege can change roles"
+                    Message = "Only admins can change roles"
                 };
             // Get current roles of the target user
             var userRoles = await _userManager.GetRolesAsync(user);
-            // Bloquer la modification du rôle d'un ADMIN (même pour ceux ayant le privilège)
+            // Bloquer la modification du rôle d'un ADMIN
             if (userRoles.Contains(StaticUserRoles.ADMIN))
                 return new GeneralServiceResponseDto()
                 {
@@ -336,7 +324,6 @@ namespace Backend_dotnet.Core.Services
             return token;
         }
         #endregion
-
 
         private UserInfoResult GenerateUserInfoObject(ApplicationUser user, IEnumerable<string> Roles)
         {

@@ -40,9 +40,6 @@ builder.Services.AddScoped<IPcRequestService, PcRequestService>();
 
 builder.Services.AddScoped<IAssetService, Backend_dotnet.Core.Services.AssetService>();
 
-// Ajout PrivilegeService
-builder.Services.AddScoped<PrivilegeService>();
-
 //Add Identity
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>()

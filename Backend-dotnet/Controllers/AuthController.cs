@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Backend_dotnet.Core.Dtos;
 using Microsoft.AspNetCore.Identity;
-using Backend_dotnet.Core.Services;
-using System.Security.Claims;
 using Backend_dotnet.Core.Entities;
 
 namespace Backend_dotnet.Controllers
@@ -17,13 +15,11 @@ namespace Backend_dotnet.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly PrivilegeService _privilegeService;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public AuthController(IAuthService authService, PrivilegeService privilegeService, UserManager<ApplicationUser> userManager)
+        public AuthController(IAuthService authService, UserManager<ApplicationUser> userManager)
         {
             _authService = authService;
-            _privilegeService = privilegeService;
             _userManager = userManager;
         }
 
@@ -42,10 +38,8 @@ namespace Backend_dotnet.Controllers
         [Authorize]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
-            if (!isAdmin && !hasManageUsers)
+            if (!isAdmin)
                 return Forbid();
             var registerResult = await _authService.RegisterAsync(User, registerDto);
             return StatusCode(registerResult.StatusCode, registerResult.Message);
@@ -54,7 +48,6 @@ namespace Backend_dotnet.Controllers
         // Route -> Login
         [HttpPost]
         [Route("login")]
-        //we use this ActionResult<LoginServiceResponseDto> instead of this IActionResult 'cause we are sending a token to the front end
         public async Task<ActionResult<LoginServiceResponseDto>> Login([FromBody] LoginDto loginDto)
         {
             var loginResult = await _authService.LoginAsync(loginDto);
@@ -68,17 +61,13 @@ namespace Backend_dotnet.Controllers
         }
 
         // Route -> Update User Role
-        // An Admin can change just User to Manager or reverse
-        // Manager and User Roles don't have access to this Route
         [HttpPost]
         [Route("update-role")]
         [Authorize]
         public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto updateRoleDto)
         {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
-            if (!isAdmin && !hasManageUsers)
+            if (!isAdmin)
                 return Forbid();
             var updateRoleResult = await _authService.UpdateRoleAsync(User, updateRoleDto);
             if (updateRoleResult.IsSucceed)
@@ -130,6 +119,7 @@ namespace Backend_dotnet.Controllers
         [Authorize]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
         {
+            Console.WriteLine($"Payload reçu : {dto.CurrentPassword} / {dto.NewPassword}");
             var result = await _authService.UpdatePasswordAsync(User, dto);
             if (result.IsSucceed)
                 return Ok(result.Message);
@@ -142,10 +132,8 @@ namespace Backend_dotnet.Controllers
         [Authorize]
         public async Task<ActionResult<IEnumerable<UserInfoResult>>> GetUsersList()
         {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
-            if (!isAdmin && !hasManageUsers)
+            if (!isAdmin)
                 return Forbid();
             var usersList = await _authService.GetUsersListAsync();
             return Ok(usersList);
@@ -157,10 +145,8 @@ namespace Backend_dotnet.Controllers
         [Route("users/{userName}")]
         public async Task<ActionResult<UserInfoResult>> GetUserDetailsByUserName([FromRoute] string userName)
         {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
-            if (!isAdmin && !hasManageUsers)
+            if (!isAdmin)
                 return Forbid();
 
             var user = await _authService.GetUserDetailsByUserNameAsync(userName);
@@ -180,36 +166,22 @@ namespace Backend_dotnet.Controllers
         public async Task<ActionResult<IEnumerable<string>>> GetUserNamesList()
         {
             var usernames = await _authService.GetUsernamesListAsync();
-
             return Ok(usernames);
         }
 
-        // Route -> Delete user by id (simple, sans vérification de mot de passe)
+        // Route -> Delete user by id
         [HttpDelete("users/{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            var hasManageUsers = await _privilegeService.UserHasPrivilegeAsync(currentUserId, "ManageUsers");
-            if (!isAdmin && !hasManageUsers)
+            if (!isAdmin)
                 return Forbid();
             var result = await _authService.DeleteUserByIdAsync(User, id);
             if (result.IsSucceed)
                 return Ok(result.Message);
             return StatusCode(result.StatusCode, result.Message);
         }
-
-        // Route -> Delete user with password verification
-        // [HttpPost("users/verify-and-delete")]
-        // [Authorize(Roles = StaticUserRoles.ADMIN)]
-        // public async Task<IActionResult> VerifyAndDelete([FromBody] DeleteUserDto dto)
-        // {
-        //     var result = await _authService.VerifyAndDeleteAsync(User, dto);
-        //     if (result.IsSucceed)
-        //         return Ok(result.Message);
-        //     return StatusCode(result.StatusCode, result.Message);
-        // }
 
         // Route -> Get List of all admin usernames
         [HttpGet]

@@ -19,8 +19,7 @@ namespace Backend_dotnet.Core.DbContext
         public DbSet<AssetScrub> AssetScrubs { get; set; }
         public DbSet<PcRequest> PcRequests { get; set; }
         public DbSet<Asset> Assets { get; set; }
-        public DbSet<Privilege> Privileges { get; set; }
-        public DbSet<UserPrivilege> UserPrivileges { get; set; }
+       
         
 
 

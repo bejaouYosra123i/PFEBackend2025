@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,13 +6,16 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Backend_dotnet.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPrivilegesAndUserPrivileges : Migration
+    public partial class RemovePrivileges : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "UserPrivileges");
-            migrationBuilder.DropTable(name: "Privileges");
+            migrationBuilder.DropTable(
+                name: "UserPrivileges");
+
+            migrationBuilder.DropTable(
+                name: "Privileges");
         }
 
         /// <inheritdoc />
@@ -24,8 +27,8 @@ namespace Backend_dotnet.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -38,24 +41,24 @@ namespace Backend_dotnet.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PrivilegeId = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserPrivileges", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserPrivileges_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_UserPrivileges_Privileges_PrivilegeId",
                         column: x => x.PrivilegeId,
                         principalTable: "Privileges",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserPrivileges_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -69,17 +72,6 @@ namespace Backend_dotnet.Migrations
                 name: "IX_UserPrivileges_UserId",
                 table: "UserPrivileges",
                 column: "UserId");
-
-            migrationBuilder.InsertData(
-                table: "Privileges",
-                columns: new[] { "Name", "Description" },
-                values: new object[,]
-                {
-                    { "ManageUsers", "Can manage users and their roles" },
-                    { "ManageAssets", "Can manage assets" },
-                    { "ViewReports", "Can view reports" },
-                    { "ManageSettings", "Can manage system settings" }
-                });
         }
     }
 }

@@ -536,57 +536,6 @@ namespace Backend_dotnet.Migrations
                     b.ToTable("PcRequests");
                 });
 
-            modelBuilder.Entity("Backend_dotnet.Core.Entities.Privilege", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Privileges");
-                });
-
-            modelBuilder.Entity("Backend_dotnet.Core.Entities.UserPrivilege", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PrivilegeId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PrivilegeId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserPrivileges");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -750,25 +699,6 @@ namespace Backend_dotnet.Migrations
                     b.Navigation("InvestmentForm");
                 });
 
-            modelBuilder.Entity("Backend_dotnet.Core.Entities.UserPrivilege", b =>
-                {
-                    b.HasOne("Backend_dotnet.Core.Entities.Privilege", "Privilege")
-                        .WithMany("UserPrivileges")
-                        .HasForeignKey("PrivilegeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Backend_dotnet.Core.Entities.ApplicationUser", "User")
-                        .WithMany("UserPrivileges")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Privilege");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -820,19 +750,9 @@ namespace Backend_dotnet.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Backend_dotnet.Core.Entities.ApplicationUser", b =>
-                {
-                    b.Navigation("UserPrivileges");
-                });
-
             modelBuilder.Entity("Backend_dotnet.Core.Entities.InvestmentForm", b =>
                 {
                     b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("Backend_dotnet.Core.Entities.Privilege", b =>
-                {
-                    b.Navigation("UserPrivileges");
                 });
 #pragma warning restore 612, 618
         }
