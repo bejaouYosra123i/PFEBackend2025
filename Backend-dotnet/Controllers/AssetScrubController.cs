@@ -22,22 +22,7 @@ namespace Backend_dotnet.Controllers
             _logService = logService;
         }
 
-        [HttpPost("delete-batch")]
-        public async Task<IActionResult> DeleteBatch([FromBody] AssetScrubDeleteRequest req)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized("Utilisateur non authentifié");
-
-            foreach (var id in req.Ids)
-            {
-                var deleted = await _service.DeleteAsync(id);
-                if (!deleted)
-                    return NotFound($"L'actif avec l'ID {id} n'a pas été trouvé.");
-                await _logService.SaveNewLog(user.UserName, $"Suppression de l'actif ID={id}");
-            }
-            return NoContent();
-        }
+        
 
         [HttpGet]
         public async Task<ActionResult<List<AssetScrubDto>>> GetAll()
@@ -60,12 +45,6 @@ namespace Backend_dotnet.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var deleted = await _service.DeleteAsync(id);
-            if (!deleted) return NotFound();
-            return NoContent();
-        }
+       
     }
 } 

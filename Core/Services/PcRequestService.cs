@@ -58,9 +58,17 @@ namespace Backend_dotnet.Core.Services
             return entity;
         }
 
-        public async Task<List<PcRequestReadDto>> GetAllRequestsAsync()
+        public async Task<List<PcRequestReadDto>> GetAllRequestsAsync(string currentUser)
         {
-            var entities = await _context.PcRequests.OrderByDescending(x => x.CreatedAt).ToListAsync();
+            var query = _context.PcRequests.AsQueryable();
+            
+            // Si l'utilisateur n'est pas un manager, ne montrer que ses propres requêtes
+            if (!currentUser.Contains("MANAGER"))
+            {
+                query = query.Where(x => x.RequestedBy == currentUser);
+            }
+            
+            var entities = await query.OrderByDescending(x => x.CreatedAt).ToListAsync();
             var result = entities.Select(e => new PcRequestReadDto
             {
                 Id = e.Id,
@@ -117,7 +125,7 @@ namespace Backend_dotnet.Core.Services
                     Description = $"PC {entity.PcType} requested by {entity.FullName}",
                     Category = entity.PcType,
                     Status = "In Service",
-                    AssignedTo = entity.FullName,
+                    AssignedTo = entity.RequestedBy,
                     Location = entity.Department,
                     AcquisitionDate = DateTime.UtcNow,
                     LastUpdate = DateTime.UtcNow
