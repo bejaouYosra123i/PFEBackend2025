@@ -1,4 +1,4 @@
-﻿using Backend_dotnet.Core.Dtos.General;
+using Backend_dotnet.Core.Dtos.General;
 using Backend_dotnet.Core.Dtos.Message;
 using System.Security.Claims;
 
