@@ -62,9 +62,67 @@ namespace Backend_dotnet.Controllers
             return Ok(updated);
         }
 
-        
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id, [FromBody] DeleteInvestmentFormRequest request)
+        {
+            try
+            {
+                if (request == null || string.IsNullOrEmpty(request.Password))
+                {
+                    return BadRequest("Le mot de passe est requis");
+                }
+
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return Unauthorized("Utilisateur non authentifié");
+                }
+
+                if (!await _userManager.CheckPasswordAsync(user, request.Password))
+                {
+                    return Unauthorized("Mot de passe incorrect");
+                }
+
+                var deleted = await _service.DeleteAsync(id);
+                if (!deleted)
+                {
+                    return NotFound("La demande d'investissement n'a pas été trouvée");
+                }
+                await _logService.SaveNewLog(user.UserName, $"Suppression de la demande d'investissement ID={id}");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                // Log l'erreur ici
+                return StatusCode(500, "Une erreur est survenue lors de la suppression");
+            }
         }
 
-        
-    
+        [Authorize]
+        [HttpPost("{id}/delete-with-password")]
+        public async Task<ActionResult> DeleteWithPassword(int id, [FromBody] DeleteInvestmentFormRequest request)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (request == null || string.IsNullOrEmpty(request.Password))
+                return BadRequest("Le mot de passe est requis");
+
+            if (user == null)
+                return Unauthorized("Utilisateur non authentifié");
+
+            if (!await _userManager.CheckPasswordAsync(user, request.Password))
+                return Unauthorized("Mot de passe incorrect");
+
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted)
+                return NotFound("La demande d'investissement n'a pas été trouvée");
+            await _logService.SaveNewLog(user.UserName, $"Suppression de la demande d'investissement ID={id}");
+            return NoContent();
+        }
+
+        public class DeleteInvestmentFormRequest
+        {
+            public string Password { get; set; }
+        }
+    }
 }

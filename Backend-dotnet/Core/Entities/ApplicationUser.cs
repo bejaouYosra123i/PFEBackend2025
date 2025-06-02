@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Collections.Generic;
 
 namespace Backend_dotnet.Core.Entities
 {
@@ -21,7 +20,7 @@ namespace Backend_dotnet.Core.Entities
         [NotMapped]
         public IList<string> Roles { get; set; }
 
-       
+      
 
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -10,13 +10,6 @@ namespace Backend_dotnet.Migrations
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(name: "UserPrivileges");
-            migrationBuilder.DropTable(name: "Privileges");
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "Privileges",
@@ -47,15 +40,15 @@ namespace Backend_dotnet.Migrations
                 {
                     table.PrimaryKey("PK_UserPrivileges", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserPrivileges_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_UserPrivileges_Privileges_PrivilegeId",
                         column: x => x.PrivilegeId,
                         principalTable: "Privileges",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserPrivileges_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -69,17 +62,16 @@ namespace Backend_dotnet.Migrations
                 name: "IX_UserPrivileges_UserId",
                 table: "UserPrivileges",
                 column: "UserId");
+        }
 
-            migrationBuilder.InsertData(
-                table: "Privileges",
-                columns: new[] { "Name", "Description" },
-                values: new object[,]
-                {
-                    { "ManageUsers", "Can manage users and their roles" },
-                    { "ManageAssets", "Can manage assets" },
-                    { "ViewReports", "Can view reports" },
-                    { "ManageSettings", "Can manage system settings" }
-                });
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "UserPrivileges");
+
+            migrationBuilder.DropTable(
+                name: "Privileges");
         }
     }
 }

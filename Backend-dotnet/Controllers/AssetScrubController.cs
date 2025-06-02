@@ -23,7 +23,6 @@ namespace Backend_dotnet.Controllers
         }
 
         
-
         [HttpGet]
         public async Task<ActionResult<List<AssetScrubDto>>> GetAll()
         {
@@ -45,6 +44,6 @@ namespace Backend_dotnet.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
-       
+        
     }
 } 

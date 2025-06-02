@@ -40,6 +40,7 @@ builder.Services.AddScoped<IPcRequestService, PcRequestService>();
 
 builder.Services.AddScoped<IAssetService, Backend_dotnet.Core.Services.AssetService>();
 builder.Services.AddScoped<PrivilegeService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 

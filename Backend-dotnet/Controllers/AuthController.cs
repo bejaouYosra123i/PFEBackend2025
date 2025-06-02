@@ -35,12 +35,9 @@ namespace Backend_dotnet.Controllers
         // Route -> Register
         [HttpPost]
         [Route("register")]
-        [Authorize]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            if (!isAdmin)
-                return Forbid();
             var registerResult = await _authService.RegisterAsync(User, registerDto);
             return StatusCode(registerResult.StatusCode, registerResult.Message);
         }
@@ -63,12 +60,9 @@ namespace Backend_dotnet.Controllers
         // Route -> Update User Role
         [HttpPost]
         [Route("update-role")]
-        [Authorize]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
         public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto updateRoleDto)
         {
-            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            if (!isAdmin)
-                return Forbid();
             var updateRoleResult = await _authService.UpdateRoleAsync(User, updateRoleDto);
             if (updateRoleResult.IsSucceed)
             {
@@ -119,7 +113,6 @@ namespace Backend_dotnet.Controllers
         [Authorize]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
         {
-            Console.WriteLine($"Payload reçu : {dto.CurrentPassword} / {dto.NewPassword}");
             var result = await _authService.UpdatePasswordAsync(User, dto);
             if (result.IsSucceed)
                 return Ok(result.Message);
@@ -129,26 +122,19 @@ namespace Backend_dotnet.Controllers
         // Route -> List of all users with details
         [HttpGet]
         [Route("users")]
-        [Authorize]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
         public async Task<ActionResult<IEnumerable<UserInfoResult>>> GetUsersList()
         {
-            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            if (!isAdmin)
-                return Forbid();
             var usersList = await _authService.GetUsersListAsync();
             return Ok(usersList);
         }
 
         // Route -> Get a User by UserName
         [HttpGet]
-        [Authorize]
         [Route("users/{userName}")]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
         public async Task<ActionResult<UserInfoResult>> GetUserDetailsByUserName([FromRoute] string userName)
         {
-            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            if (!isAdmin)
-                return Forbid();
-
             var user = await _authService.GetUserDetailsByUserNameAsync(userName);
             if (user is not null)
             {
@@ -171,12 +157,9 @@ namespace Backend_dotnet.Controllers
 
         // Route -> Delete user by id
         [HttpDelete("users/{id}")]
-        [Authorize]
+        [Authorize(Roles = StaticUserRoles.ADMIN)]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var isAdmin = User.IsInRole(StaticUserRoles.ADMIN);
-            if (!isAdmin)
-                return Forbid();
             var result = await _authService.DeleteUserByIdAsync(User, id);
             if (result.IsSucceed)
                 return Ok(result.Message);
